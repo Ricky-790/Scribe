@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spectator - Intelligence Briefing</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Source+Serif+4:opsz,wght@8..60,400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#573c00",
+                        "secondary-container": "#17533a",
+                        "inverse-surface": "#e1e2e8",
+                        "tertiary-fixed": "#d4e3ff",
+                        "on-error": "#690005",
+                        "surface-container-highest": "#323539",
+                        "tertiary": "#a7caff",
+                        "surface-bright": "#37393e",
+                        "secondary-fixed-dim": "#98d3b2",
+                        "inverse-primary": "#7d5700",
+                        "on-tertiary-fixed": "#001c39",
+                        "surface-dim": "#111417",
+                        "on-primary-fixed-variant": "#5f4100",
+                        "tertiary-fixed-dim": "#a4c9ff",
+                        "on-tertiary-container": "#004179",
+                        "inverse-on-surface": "#2e3135",
+                        "error-container": "#93000a",
+                        "primary-fixed-dim": "#f5bd58",
+                        "surface-container-low": "#191c20",
+                        "primary": "#f7bf59",
+                        "secondary-fixed": "#b3f0cd",
+                        "on-tertiary-fixed-variant": "#014883",
+                        "surface-tint": "#f5bd58",
+                        "surface": "#111417",
+                        "on-surface-variant": "#d3c4b1",
+                        "primary-container": "#d9a441",
+                        "surface-variant": "#323539",
+                        "background": "#111417",
+                        "on-secondary-fixed-variant": "#145037",
+                        "outline-variant": "#4f4536",
+                        "on-primary": "#422c00",
+                        "outline": "#9c8f7d",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#8ac5a5",
+                        "secondary": "#98d3b2",
+                        "on-surface": "#e1e2e8",
+                        "on-background": "#e1e2e8",
+                        "surface-container-high": "#272a2e",
+                        "primary-fixed": "#ffdeaa",
+                        "on-secondary-fixed": "#002113",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed": "#271900",
+                        "tertiary-container": "#7faff1",
+                        "surface-container": "#1d2024",
+                        "on-secondary": "#003824",
+                        "surface-container-lowest": "#0c0e12",
+                        "on-tertiary": "#00315d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "margin-mobile": "16px",
+                        "container-max": "1120px",
+                        "section-gap": "80px",
+                        "margin-desktop": "48px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "display-lg": ["\"Source Serif 4\""],
+                        "mono-ui": ["Inter"],
+                        "display-lg-mobile": ["\"Source Serif 4\""],
+                        "headline-md": ["\"Source Serif 4\""],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["13px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "mono-ui": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "30.6px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "27.2px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar (Linear/Landing Page Intent - Suppressed regular nav, focusing on CTAs) -->
+<header class="w-full bg-surface border-b border-outline-variant px-margin-mobile md:px-margin-desktop py-4 flex justify-between items-center z-50 fixed top-0 left-0 right-0">
+<div class="flex items-center gap-3">
+<img alt="Spectator Logo" class="h-8 w-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPV3TEFh5nE2c0ozAU2uKlZzQEJDnwQCr5X2yhaQ1vPRVffEC4SNhk5rOpa8Wz5I7j00QNQIOGwNJEX2QZag0SAaWf9msdiQpkMJrCaVRbxIaKQYlW6w5Onokb81BE62OdsuVxBGZcasLd2kub9rmlz_S2pBj7HF3uOti4QXnBM9EEV0rZm5VhsrS1MGE_CjyTaarj4HMlG7EqoQPZ4tuSNrzs0p1UWE8zavfpWu62GM-ap5FHctQf"/>
+</div>
+<div class="flex items-center gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Log in</a>
+<a class="bg-primary-container text-on-primary-container font-label-sm text-label-sm px-6 py-2 rounded transition-opacity duration-200 hover:opacity-90" href="#">Sign up</a>
+</div>
+</header>
+<main class="flex-grow flex flex-col pt-24">
+<!-- Hero Section -->
+<section class="flex flex-col items-center justify-center text-center px-margin-mobile md:px-margin-desktop py-24 md:py-32 max-w-container-max mx-auto w-full">
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-surface max-w-4xl mb-6 leading-tight">
+                Give it a subject,<br class="hidden md:block"/> get back a report.
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mb-12">
+                Spectator is your AI research assistant that investigates topics deeply and delivers polished dossiers while you focus on high-level thinking.
+            </p>
+<a class="bg-primary-container text-on-primary-container font-label-sm text-label-sm px-8 py-4 rounded transition-opacity duration-200 hover:opacity-90 flex items-center gap-2" href="#">
+                Start researching
+                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</section>
+<!-- Process Section -->
+<section class="px-margin-mobile md:px-margin-desktop py-24 bg-surface-container-lowest border-t border-outline-variant w-full">
+<div class="max-w-container-max mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-gutter relative">
+<!-- Connecting Line (Desktop) -->
+<div class="hidden md:block absolute top-12 left-[15%] right-[15%] h-px bg-outline-variant z-0"></div>
+<!-- Step 1 -->
+<div class="flex flex-col items-center text-center relative z-10">
+<div class="w-24 h-24 rounded-full bg-surface border border-outline-variant flex items-center justify-center mb-6 text-on-surface-variant">
+<span class="material-symbols-outlined text-4xl">edit_note</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary mb-2">01</span>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Ask</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Provide a topic, question, or specific area of interest.</p>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center text-center relative z-10">
+<div class="w-24 h-24 rounded-full bg-surface border border-outline-variant flex items-center justify-center mb-6 text-on-surface-variant">
+<span class="material-symbols-outlined text-4xl">search</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary mb-2">02</span>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Researches</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Spectator autonomously gathers, synthesizes, and cross-references data.</p>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col items-center text-center relative z-10">
+<div class="w-24 h-24 rounded-full bg-surface border border-outline-variant flex items-center justify-center mb-6 text-on-surface-variant">
+<span class="material-symbols-outlined text-4xl">article</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary mb-2">03</span>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Report</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Receive a structured, comprehensive dossier ready for review.</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full bg-surface border-t border-outline-variant px-margin-mobile md:px-margin-desktop py-8 flex flex-col items-center justify-center text-center mt-auto">
+<img alt="Spectator Logo" class="h-6 w-auto mb-4 opacity-70 grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPV3TEFh5nE2c0ozAU2uKlZzQEJDnwQCr5X2yhaQ1vPRVffEC4SNhk5rOpa8Wz5I7j00QNQIOGwNJEX2QZag0SAaWf9msdiQpkMJrCaVRbxIaKQYlW6w5Onokb81BE62OdsuVxBGZcasLd2kub9rmlz_S2pBj7HF3uOti4QXnBM9EEV0rZm5VhsrS1MGE_CjyTaarj4HMlG7EqoQPZ4tuSNrzs0p1UWE8zavfpWu62GM-ap5FHctQf"/>
+<p class="font-label-sm text-label-sm text-on-surface-variant opacity-60">
+            © 2024 Spectator Intelligence Briefing.
+        </p>
+</footer>
+</body></html>

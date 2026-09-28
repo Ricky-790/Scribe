@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spectator - Intelligence Briefing</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Source+Serif+4:opsz,wght@8..60,400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#573c00",
+                        "secondary-container": "#17533a",
+                        "inverse-surface": "#e1e2e8",
+                        "tertiary-fixed": "#d4e3ff",
+                        "on-error": "#690005",
+                        "surface-container-highest": "#323539",
+                        "tertiary": "#a7caff",
+                        "surface-bright": "#37393e",
+                        "secondary-fixed-dim": "#98d3b2",
+                        "inverse-primary": "#7d5700",
+                        "on-tertiary-fixed": "#001c39",
+                        "surface-dim": "#111417",
+                        "on-primary-fixed-variant": "#5f4100",
+                        "tertiary-fixed-dim": "#a4c9ff",
+                        "on-tertiary-container": "#004179",
+                        "inverse-on-surface": "#2e3135",
+                        "error-container": "#93000a",
+                        "primary-fixed-dim": "#f5bd58",
+                        "surface-container-low": "#191c20",
+                        "primary": "#f7bf59",
+                        "secondary-fixed": "#b3f0cd",
+                        "on-tertiary-fixed-variant": "#014883",
+                        "surface-tint": "#f5bd58",
+                        "surface": "#111417",
+                        "on-surface-variant": "#d3c4b1",
+                        "primary-container": "#d9a441",
+                        "surface-variant": "#323539",
+                        "background": "#111417",
+                        "on-secondary-fixed-variant": "#145037",
+                        "outline-variant": "#4f4536",
+                        "on-primary": "#422c00",
+                        "outline": "#9c8f7d",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#8ac5a5",
+                        "secondary": "#98d3b2",
+                        "on-surface": "#e1e2e8",
+                        "on-background": "#e1e2e8",
+                        "surface-container-high": "#272a2e",
+                        "primary-fixed": "#ffdeaa",
+                        "on-secondary-fixed": "#002113",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed": "#271900",
+                        "tertiary-container": "#7faff1",
+                        "surface-container": "#1d2024",
+                        "on-secondary": "#003824",
+                        "surface-container-lowest": "#0c0e12",
+                        "on-tertiary": "#00315d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "margin-mobile": "16px",
+                        "container-max": "1120px",
+                        "section-gap": "80px",
+                        "margin-desktop": "48px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "display-lg": ["\"Source Serif 4\""],
+                        "mono-ui": ["Inter"],
+                        "display-lg-mobile": ["\"Source Serif 4\""],
+                        "headline-md": ["\"Source Serif 4\""],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["13px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "mono-ui": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "30.6px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "27.2px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1, 'wght' 300; }
+        
+        /* Subtle pulse animation for status dots */
+        @keyframes subtle-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-status-pulse { animation: subtle-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-background text-on-surface antialiased font-body-md">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[260px] border-r border-outline-variant bg-surface flex flex-col z-20">
+<!-- Brand / Header -->
+<div class="px-6 py-8 flex flex-col gap-4">
+<div class="w-12 h-12 rounded bg-surface-container overflow-hidden border border-outline-variant flex-shrink-0">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPV3TEFh5nE2c0ozAU2uKlZzQEJDnwQCr5X2yhaQ1vPRVffEC4SNhk5rOpa8Wz5I7j00QNQIOGwNJEX2QZag0SAaWf9msdiQpkMJrCaVRbxIaKQYlW6w5Onokb81BE62OdsuVxBGZcasLd2kub9rmlz_S2pBj7HF3uOti4QXnBM9EEV0rZm5VhsrS1MGE_CjyTaarj4HMlG7EqoQPZ4tuSNrzs0p1UWE8zavfpWu62GM-ap5FHctQf"/>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-semibold text-on-surface tracking-tight">Spectator</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mt-1">Intelligence Briefing</p>
+</div>
+<button class="mt-4 w-full bg-primary-container text-on-primary-container hover:bg-primary transition-colors duration-200 py-2 px-4 rounded font-label-sm text-label-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Research
+            </button>
+</div>
+<!-- Main Navigation -->
+<nav class="flex-1 overflow-y-auto px-4 py-2 flex flex-col gap-1">
+<p class="px-4 py-2 text-xs font-medium text-outline uppercase tracking-widest mb-1">Navigation</p>
+<!-- Inactive Nav Item -->
+<a class="flex items-center gap-3 px-4 py-2.5 rounded hover:bg-surface-container-low transition-colors duration-200 text-on-surface-variant font-label-sm text-label-sm group" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline group-hover:text-primary transition-colors duration-200">history</span>
+<span>Past Reports</span>
+</a>
+<!-- Inactive Nav Item -->
+<a class="flex items-center gap-3 px-4 py-2.5 rounded hover:bg-surface-container-low transition-colors duration-200 text-on-surface-variant font-label-sm text-label-sm group" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline group-hover:text-primary transition-colors duration-200">search</span>
+<span>Saved Queries</span>
+</a>
+<!-- Inactive Nav Item -->
+<a class="flex items-center gap-3 px-4 py-2.5 rounded hover:bg-surface-container-low transition-colors duration-200 text-on-surface-variant font-label-sm text-label-sm group" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline group-hover:text-primary transition-colors duration-200">monitoring</span>
+<span>Market Analysis</span>
+</a>
+<!-- Inactive Nav Item -->
+<a class="flex items-center gap-3 px-4 py-2.5 rounded hover:bg-surface-container-low transition-colors duration-200 text-on-surface-variant font-label-sm text-label-sm group" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline group-hover:text-primary transition-colors duration-200">book</span>
+<span>Library</span>
+</a>
+<!-- Recent Activity Section (Visual enhancement based on prompt) -->
+<div class="mt-8 mb-2">
+<p class="px-4 py-2 text-xs font-medium text-outline uppercase tracking-widest">Active Tasks</p>
+<div class="px-4 py-2 flex items-center gap-3 text-on-surface-variant font-label-sm text-label-sm">
+<div class="w-2 h-2 rounded-full bg-primary animate-status-pulse"></div>
+<span class="truncate">Analyzing Global Logistics</span>
+</div>
+<div class="px-4 py-2 flex items-center gap-3 text-on-surface-variant font-label-sm text-label-sm opacity-60">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="truncate">Q3 Telecom Earnings</span>
+</div>
+</div>
+</nav>
+<!-- Footer Navigation -->
+<div class="p-4 border-t border-outline-variant bg-surface">
+<a class="flex items-center gap-3 px-4 py-2 rounded hover:bg-surface-container-low transition-colors duration-200 text-on-surface-variant font-label-sm text-label-sm group" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline group-hover:text-on-surface transition-colors duration-200">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded hover:bg-surface-container-low transition-colors duration-200 text-on-surface-variant font-label-sm text-label-sm group" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline group-hover:text-on-surface transition-colors duration-200">help</span>
+<span>Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-[260px] relative flex flex-col justify-center items-center p-8 bg-background">
+<!-- Center Interface -->
+<div class="w-full max-w-3xl flex flex-col items-center gap-12 -mt-24">
+<h2 class="font-display-lg text-display-lg text-on-surface text-center opacity-90 tracking-tight">
+                What should Spectator look into?
+            </h2>
+<!-- Search/Command Input -->
+<div class="w-full relative group">
+<div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline text-[24px]">temp_preferences_custom</span>
+</div>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg py-5 pl-16 pr-16 text-body-lg text-on-surface placeholder:text-outline-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:bg-surface transition-all duration-300 shadow-sm" placeholder="Enter a company, market sector, or geopolitical entity..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-4 flex items-center">
+<button class="p-2 rounded text-outline hover:text-primary hover:bg-surface-container-high transition-colors duration-200 flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">send</span>
+</button>
+</div>
+</div>
+<!-- Quick Suggestions (Bento-style layout hint) -->
+<div class="flex flex-wrap justify-center gap-3 mt-4">
+<button class="px-4 py-2 border border-outline-variant rounded-full text-label-sm font-label-sm text-on-surface-variant hover:border-outline hover:text-on-surface transition-colors bg-surface-container-lowest">
+                    Emerging Tech Trends
+                </button>
+<button class="px-4 py-2 border border-outline-variant rounded-full text-label-sm font-label-sm text-on-surface-variant hover:border-outline hover:text-on-surface transition-colors bg-surface-container-lowest">
+                    Supply Chain Vulnerabilities
+                </button>
+<button class="px-4 py-2 border border-outline-variant rounded-full text-label-sm font-label-sm text-on-surface-variant hover:border-outline hover:text-on-surface transition-colors bg-surface-container-lowest">
+                    Competitor Analysis: AI
+                </button>
+</div>
+</div>
+</main>
+</body></html>

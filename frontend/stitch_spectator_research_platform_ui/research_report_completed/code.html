@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spectator - Completed Research Report</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Serif+4:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#573c00",
+                        "secondary-container": "#17533a",
+                        "inverse-surface": "#e1e2e8",
+                        "tertiary-fixed": "#d4e3ff",
+                        "on-error": "#690005",
+                        "surface-container-highest": "#323539",
+                        "tertiary": "#a7caff",
+                        "surface-bright": "#37393e",
+                        "secondary-fixed-dim": "#98d3b2",
+                        "inverse-primary": "#7d5700",
+                        "on-tertiary-fixed": "#001c39",
+                        "surface-dim": "#111417",
+                        "on-primary-fixed-variant": "#5f4100",
+                        "tertiary-fixed-dim": "#a4c9ff",
+                        "on-tertiary-container": "#004179",
+                        "inverse-on-surface": "#2e3135",
+                        "error-container": "#93000a",
+                        "primary-fixed-dim": "#f5bd58",
+                        "surface-container-low": "#191c20",
+                        "primary": "#f7bf59",
+                        "secondary-fixed": "#b3f0cd",
+                        "on-tertiary-fixed-variant": "#014883",
+                        "surface-tint": "#f5bd58",
+                        "surface": "#111417",
+                        "on-surface-variant": "#d3c4b1",
+                        "primary-container": "#d9a441",
+                        "surface-variant": "#323539",
+                        "background": "#111417",
+                        "on-secondary-fixed-variant": "#145037",
+                        "outline-variant": "#4f4536",
+                        "on-primary": "#422c00",
+                        "outline": "#9c8f7d",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#8ac5a5",
+                        "secondary": "#98d3b2",
+                        "on-surface": "#e1e2e8",
+                        "on-background": "#e1e2e8",
+                        "surface-container-high": "#272a2e",
+                        "primary-fixed": "#ffdeaa",
+                        "on-secondary-fixed": "#002113",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed": "#271900",
+                        "tertiary-container": "#7faff1",
+                        "surface-container": "#1d2024",
+                        "on-secondary": "#003824",
+                        "surface-container-lowest": "#0c0e12",
+                        "on-tertiary": "#00315d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "margin-mobile": "16px",
+                        "container-max": "1120px",
+                        "section-gap": "80px",
+                        "margin-desktop": "48px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "display-lg": ["\"Source Serif 4\""],
+                        "mono-ui": ["Inter"],
+                        "display-lg-mobile": ["\"Source Serif 4\""],
+                        "headline-md": ["\"Source Serif 4\""],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["13px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "mono-ui": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "30.6px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "27.2px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Editorial adjustments */
+        .editorial-content p { margin-bottom: 1.5em; line-height: 1.7; color: #e1e2e8; }
+        .editorial-content h2 { font-family: "Source Serif 4", serif; font-size: 24px; font-weight: 500; margin-top: 2em; margin-bottom: 0.75em; color: #e1e2e8; }
+        .editorial-content h3 { font-family: "Source Serif 4", serif; font-size: 20px; font-weight: 500; margin-top: 1.5em; margin-bottom: 0.5em; color: #d3c4b1; }
+        .editorial-content blockquote { border-left: 2px solid #4f4536; padding-left: 1rem; margin-left: 0; color: #d3c4b1; font-style: italic; }
+        .editorial-content ul { list-style-type: none; padding-left: 0; margin-bottom: 1.5em; }
+        .editorial-content li { padding: 0.5rem 0; border-bottom: 1px solid #323539; color: #e1e2e8; position: relative; padding-left: 1.5rem; }
+        .editorial-content li::before { content: "•"; position: absolute; left: 0; color: #f7bf59; }
+        .editorial-content li:last-child { border-bottom: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex font-body-md">
+<!-- SideNavBar (Predicted Component) -->
+<nav class="hidden md:flex flex-col h-full fixed left-0 top-0 w-[260px] border-r border-outline-variant bg-surface p-unit-margin-desktop">
+<!-- Header -->
+<div class="mb-section-gap">
+<h1 class="font-headline-md text-headline-md font-semibold text-on-surface tracking-tight">Spectator</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Intelligence Briefing</p>
+</div>
+<!-- Main Navigation -->
+<div class="flex-grow flex flex-col space-y-2">
+<!-- Active Tab (Past Reports conceptually aligns with viewing a report) -->
+<a class="flex items-center space-x-3 p-3 rounded-DEFAULT hover:bg-surface-container-low transition-colors duration-200 opacity-80 text-primary font-bold border-r-2 border-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">history</span>
+<span class="font-label-sm text-label-sm">Past Reports</span>
+</a>
+<a class="flex items-center space-x-3 p-3 rounded-DEFAULT hover:bg-surface-container-low transition-colors duration-200 text-on-surface-variant font-label-sm" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-sm text-label-sm">Saved Queries</span>
+</a>
+<a class="flex items-center space-x-3 p-3 rounded-DEFAULT hover:bg-surface-container-low transition-colors duration-200 text-on-surface-variant font-label-sm" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-label-sm text-label-sm">Market Analysis</span>
+</a>
+<a class="flex items-center space-x-3 p-3 rounded-DEFAULT hover:bg-surface-container-low transition-colors duration-200 text-on-surface-variant font-label-sm" href="#">
+<span class="material-symbols-outlined">book</span>
+<span class="font-label-sm text-label-sm">Library</span>
+</a>
+</div>
+<!-- CTA -->
+<button class="mt-8 mb-8 w-full bg-primary-container text-on-primary-container py-3 px-4 rounded-DEFAULT font-label-sm text-label-sm hover:opacity-90 transition-opacity">
+            New Research
+        </button>
+<!-- Footer Navigation -->
+<div class="flex flex-col space-y-2 border-t border-outline-variant pt-6">
+<a class="flex items-center space-x-3 p-3 rounded-DEFAULT hover:bg-surface-container-low transition-colors duration-200 text-on-surface-variant font-label-sm" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+<a class="flex items-center space-x-3 p-3 rounded-DEFAULT hover:bg-surface-container-low transition-colors duration-200 text-on-surface-variant font-label-sm" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-sm text-label-sm">Support</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-grow md:ml-[260px] min-h-screen">
+<!-- Minimal Top App Bar for Mobile -->
+<div class="md:hidden flex items-center justify-between p-margin-mobile border-b border-outline-variant bg-surface">
+<h1 class="font-headline-md text-headline-md font-semibold text-on-surface">Spectator</h1>
+<button class="text-on-surface">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+<!-- Report Canvas -->
+<article class="max-w-[700px] mx-auto px-margin-mobile md:px-0 py-section-gap">
+<!-- Report Header -->
+<header class="mb-12 border-b border-outline-variant pb-8">
+<!-- Meta Tags -->
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="px-3 py-1 border border-outline-variant rounded-full font-label-sm text-label-sm text-on-surface-variant">Architecture</span>
+<span class="px-3 py-1 border border-outline-variant rounded-full font-label-sm text-label-sm text-on-surface-variant">Energy</span>
+<span class="px-3 py-1 border border-outline-variant rounded-full font-label-sm text-label-sm text-on-surface-variant">Urban Planning</span>
+</div>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-6">
+                    The Future of Semi-Transparent Solar Architecture
+                </h1>
+<div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant flex items-start space-x-3">
+<span class="material-symbols-outlined text-primary mt-1">search</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1">ORIGINAL QUERY</p>
+<p class="font-body-md text-body-md text-on-surface">Investigate recent breakthroughs in semi-transparent solar cell efficiency for urban windows.</p>
+</div>
+</div>
+</header>
+<!-- Report Body -->
+<div class="editorial-content font-body-lg text-body-lg">
+<p>
+                    The integration of photovoltaic technology into the building envelope, commonly known as Building-Integrated Photovoltaics (BIPV), has long been heralded as a critical pathway toward zero-emission urban centers. However, the aesthetic and functional demands of modern architecture—specifically the ubiquitous use of glass facades—have historically constrained widespread adoption.
+                </p>
+<p>
+                    Recent months have seen a paradigm shift driven by breakthroughs in semi-transparent organic solar cells (OSCs) and perovskite solar cells (PSCs). These advancements address the traditional trade-off between power conversion efficiency (PCE) and average visible transmittance (AVT), opening new possibilities for "solar windows" that generate meaningful electricity without significantly compromising natural illumination or visual clarity.
+                </p>
+<h2>Key Technological Drivers</h2>
+<p>
+                    The core challenge in semi-transparent solar technology is designing materials that selectively absorb non-visible spectrums (ultraviolet and near-infrared) while allowing visible light to pass through. 
+                </p>
+<h3>Organic Photovoltaics (OPVs)</h3>
+<p>
+                    OPVs offer compelling advantages due to their tunable absorption spectra, lightweight nature, and potential for flexible form factors. Recent studies have demonstrated OPVs achieving PCEs exceeding 10% alongside an AVT of over 30%. This has been achieved largely through the synthesis of novel non-fullerene acceptors (NFAs) that push absorption peaks deeper into the near-infrared region, effectively invisible to the human eye.
+                </p>
+<h3>Perovskite Innovations</h3>
+<p>
+                    While traditionally opaque, recent engineering of perovskite thin films has yielded remarkable results. By carefully controlling the film thickness and implementing micro-structured architectures—such as "island" formations that create microscopic clear zones within the active layer—researchers have achieved semi-transparent PSCs with efficiencies surpassing 12% and competitive transparency levels.
+                </p>
+<blockquote>
+                    "We are no longer choosing between a window and a solar panel. The material itself is becoming functional smart glass, capable of offsetting up to 40% of a typical commercial building's energy consumption."
+                </blockquote>
+<h2>Market Implications and Urban Impact</h2>
+<p>
+                    The commercialization of these technologies is poised to disrupt the traditional architectural glass market. The implications for dense urban environments, where rooftop space is severely limited relative to the building's energy footprint, are profound.
+                </p>
+<ul>
+<li><strong>Energy Autonomy:</strong> High-rise structures can transform vast vertical surfaces into active generation assets.</li>
+<li><strong>Thermal Management:</strong> Advanced solar windows inherently block significant portions of infrared radiation, passively reducing HVAC cooling loads.</li>
+<li><strong>Regulatory Compliance:</strong> As municipalities enact stricter emission mandates (e.g., NYC Local Law 97), BIPV solutions offer a viable retrofit strategy for aging commercial real estate.</li>
+</ul>
+<div class="my-8 rounded-lg overflow-hidden border border-outline-variant relative h-64">
+<img class="object-cover w-full h-full" data-alt="A detailed hyper-realistic architectural rendering of a modern urban skyscraper enveloped in semi-transparent solar glass. The building reflects a golden hour sunset, showing a subtle iridescent sheen on the glass panels indicating the photovoltaic technology. The setting is a dense, futuristic metropolis with a minimalist, high-contrast aesthetic favoring deep shadows and warm amber highlights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNLVkSTgoTtUe6GTT3lFwk7Mgz_7SlSmQlBbPUCJRyI8P34QqFJgVJABt2u5wIQ7s84Wi2MUQzKldSAh-Mltla9SCgCf9PxGrihidipL9iFHQngRJIsbAEboF2V8oxAJy1KFb5pzZttDs2TkpPYk6asGx3wukmgdcUeDQM9pB-nwVefLdIV0E_wcJdHdtd6nMn9iQc7Jb7qNCftRyZPBmlodyMeA573bbDqTF1JzD8pPxm94GQ9nKG"/>
+</div>
+<h2>Conclusion</h2>
+<p>
+                    The trajectory of semi-transparent solar technology suggests an imminent transition from laboratory prototypes to commercially viable architectural components. While challenges remain concerning long-term stability and manufacturing scalability, the fundamental physics and material science barriers are rapidly dissolving. 
+                </p>
+</div>
+<!-- Footer Actions -->
+<div class="mt-16 pt-8 border-t border-outline-variant flex justify-between items-center">
+<button class="flex items-center space-x-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">download</span>
+<span class="font-label-sm text-label-sm">Export PDF</span>
+</button>
+<div class="flex space-x-4">
+<button class="flex items-center space-x-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">bookmark</span>
+</button>
+<button class="flex items-center space-x-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+</article>
+</main>
+</body></html>
