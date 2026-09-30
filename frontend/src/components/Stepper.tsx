@@ -1,9 +1,15 @@
 import React from "react";
 
-// Maps a backend status string to one of our 4 stepper phases.
-// Returns the *index* of the active step (0..3), where 3 = done.
+// Maps a backend status string to one of our 5 stepper phases.
+// Returns the *index* of the active step (0..4), where 4 = done.
 // If unknown, returns -1 (no step shown active).
-export const STEP_PHASES = ["planning", "researching", "synthesizing", "done"];
+export const STEP_PHASES = [
+  "planning",
+  "researching",
+  "verifying",
+  "synthesizing",
+  "done",
+];
 
 export function statusToStepIndex(
   status: string | null | undefined,
@@ -12,17 +18,19 @@ export function statusToStepIndex(
   if (s === "pending") return -1;
   if (s === "planning") return 0;
   if (s === "researching" || s === "research") return 1;
-  if (s === "synthesizing" || s === "synthesis") return 2;
-  if (s === "done" || s === "completed") return 3;
+  // Build Claims and Challenge run here — the evidence is being checked.
+  if (s === "verifying" || s === "verify" || s === "challenging") return 2;
+  if (s === "synthesizing" || s === "synthesis") return 3;
+  if (s === "done" || s === "completed") return 4;
   if (s === "failed") return -1;
   return -1;
 }
 
 interface StepperProps {
-  activeIndex: number; // 0..3
+  activeIndex: number; // 0..4
 }
 
-const LABELS = ["Planning", "Researching", "Synthesizing", "Done"];
+const LABELS = ["Planning", "Researching", "Verifying", "Writing", "Done"];
 
 // Visual treatment:
 //  - the connecting rail fills from the left up to the active step

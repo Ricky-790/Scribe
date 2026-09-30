@@ -1,4 +1,5 @@
 import asyncio
+from uuid import uuid4
 
 from e2b_code_interpreter import Sandbox
 from pydantic_ai import Agent
@@ -6,7 +7,7 @@ from pydantic_ai.messages import ModelRequest, UserPromptPart
 
 from agents_service.agents.diagram_agent import generate_diagram_code
 from agents_service.models import DiagramAgentOutput, DiagramData, DiagramTypes
-from agents_service.pipeline.rate_limiting import run_with_retry
+from agents_service.pipeline.orchestrator import get_orchestrator
 from agents_service.prompts import DIAGRAM_AGENT_PROMPT
 from custom_logger import get_logger
 
@@ -46,7 +47,9 @@ async def _render_mermaid(mermaid_str: str) -> bytes:
         return response.content
 
 
-async def _run_codegen_sandbox(diagram_data: DiagramData) -> tuple[bytearray, str]:
+async def _run_codegen_sandbox(
+    diagram_data: DiagramData, diagram_agent=None
+) -> tuple[bytearray, str]:
     last_error: str | None = None
     last_code: str | None = None
 
@@ -74,10 +77,8 @@ async def _run_codegen_sandbox(diagram_data: DiagramData) -> tuple[bytearray, st
                     ```{last_error}```
                     Fix the code and output the correct output."""
 
-            result = await run_with_retry(
-                generate_diagram_code,
-                prompt,
-                provider="nvidia",
+            result = await get_orchestrator("diagram").run(
+                generate_diagram_code, prompt
             )
             output: DiagramAgentOutput = result.output
 
@@ -102,16 +103,18 @@ async def _run_codegen_sandbox(diagram_data: DiagramData) -> tuple[bytearray, st
 async def execute_diagram(diagram_data: DiagramData) -> tuple[bytearray, str]:
     """
     Entry point. Routes to mermaid.ink or codegen sandbox based on diagram_type.
+
+    Raises DiagramGenerationError if the diagram cannot be produced, so the
+    caller can fall back to a prose-only section.
     """
     if diagram_data.diagram_type in (
         DiagramTypes.FLOW_CHART,
         DiagramTypes.BLOCK_DIAGRAM,
     ):
         png_bytes = await _render_mermaid(diagram_data.mermaid)
-        return bytearray(png_bytes), diagram_data.caption
+        # Captions are prose ("Flow of (the) pipeline"), so they cannot be used
+        # as an object key — they carry spaces and parens that break the
+        # placeholder round-trip in attach_signed_url.
+        return bytearray(png_bytes), f"diagram_{uuid4().hex[:12]}"
     else:
-        try:
-            png_bytes, file_name = await _run_codegen_sandbox(diagram_data)
-            return png_bytes, file_name
-        except DiagramGenerationError:
-            return None
+        return await _run_codegen_sandbox(diagram_data)

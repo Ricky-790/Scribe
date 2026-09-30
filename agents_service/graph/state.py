@@ -1,13 +1,15 @@
-import operator
-from typing import Annotated, Any
+from typing import Annotated
 
 from typing_extensions import TypedDict
 
 from agents_service.models import (
+    ChallengeResult,
+    ClaimGraph,
     IntentClassification,
     Report,
     ReportOutline,
     ReportSection,
+    ReplanPlan,
     ResearchPlan,
     Task,
     TaskResult,
@@ -15,34 +17,42 @@ from agents_service.models import (
 
 
 def merge_dicts(old: dict, new: dict) -> dict:
-    """Reducer: deep-merge two dicts (for task results)."""
+    """
+    Reducer: merge a partial mapping into the accumulated one.
+
+    Shallow by design — every value written here is a whole model keyed by id
+    (task id, section order), so there is nothing nested to merge.
+    """
     merged = dict(old)
     merged.update(new)
     return merged
 
 
-def add_to_list(old: list, new: list) -> list:
-    """Reducer: extend list."""
-    return old + new
-
-
-class ResearchGraphState(TypedDict):
+class ResearchGraphState(TypedDict, total=False):
     """Global state for the entire research runtime."""
+
     report_id: str
     # Inputs
     query: str
     categories: list[str]
 
-    # Phase 1: Classification
-    classification: IntentClassification | None
-
-    # Phase 2: Planning
+    # Planning
     plan: ResearchPlan | None
+    # Tasks added by replan, appended across rounds
+    replan_tasks: Annotated[list[Task], lambda old, new: old + new]
+    # How many replan rounds have run; caps the challenge/replan loop
+    replan_count: int
 
-    # Phase 3: Research execution
+    # Research execution. Accumulates across rounds, so a replan round's
+    # results sit alongside the original run's and build_claims sees both.
     task_results: Annotated[dict[str, TaskResult], merge_dicts]
 
-    # Phase 4: Synthesis
+    # Consolidation
+    claim_graph: ClaimGraph | None
+    challenge_result: ChallengeResult | None
+    replan_plan: ReplanPlan | None
+
+    # Synthesis
     report_outline: ReportOutline | None
     written_sections: Annotated[dict[int, str], merge_dicts]  # order -> content
     final_report: Report | None
@@ -50,32 +60,23 @@ class ResearchGraphState(TypedDict):
     # Control flow
     error: str | None
 
-    # Streaming / observability (accumulated for Redis pub/sub)
-    stream_events: Annotated[list[dict], add_to_list]
 
-
-# Subgraph state for the research DAG executor
-class ResearchPhaseState(TypedDict):
-    """State scoped to the research phase subgraph."""
-
-    plan: ResearchPlan
-    # Completed results
-    task_results: Annotated[dict[str, TaskResult], merge_dicts]
-    # Task IDs still pending
-    pending: list[str]
-    # Task IDs completed in this batch (for reducer bookkeeping)
-    just_completed: Annotated[list[str], add_to_list]
-    # Error if DAG stalls
-    error: str | None
-    stream_events: Annotated[list[dict], add_to_list]
-
-
-# State for individual section writing
 class SectionWriteState(TypedDict):
-    """Input state for a single section writer node."""
+    """Input state for a single section writer node, dispatched via Send."""
 
     goal: str
     outline: ReportOutline
     section: ReportSection
+    claim_graph: ClaimGraph
     results: dict[str, TaskResult]
     order: int
+
+
+class TaskExecutionState(TypedDict):
+    """Input state for a single research task node, dispatched via Send."""
+
+    task: Task
+    results_so_far: dict[str, TaskResult]
+    # Only present on replan rounds
+    prior_claims: list[str]
+    known_problems: list[str]

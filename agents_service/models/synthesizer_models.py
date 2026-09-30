@@ -18,9 +18,13 @@ class ReportSection(BaseModel):
     description: str = Field(
         ..., description="What this section should cover — guides the section writer."
     )
-    relevant_task_ids: list[str] = Field(
+    relevant_claim_ids: list[str] = Field(
         default_factory=list,
-        description="task_ids whose findings are relevant to this section. Can be empty for sections like an introduction or conclusion that synthesize across everything rather than drawing on one specific set of findings.",
+        description=(
+            "claim_ids whose evidence is relevant to this section. Can be empty for "
+            "sections like an introduction or conclusion that synthesize across "
+            "everything rather than drawing on specific claims."
+        ),
     )
     diagrams: list[GeneratedDiagram] = Field(
         default_factory=list,

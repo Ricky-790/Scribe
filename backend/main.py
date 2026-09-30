@@ -22,11 +22,15 @@ async def lifespan(app: FastAPI):  # Get client on startup, close on shutdown
 
 app = FastAPI(title="Multi-Agent Research API", lifespan=lifespan)
 
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-    ],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -15,3 +15,13 @@ export function apiRequest(
   path: string,
   options?: ApiRequestOptions,
 ): Promise<any>;
+
+/** Opens an SSE stream; the caller feeds the response to readEventStream. */
+export function openEventStream(
+  path: string,
+  options?: { token?: string; signal?: AbortSignal },
+): Promise<Response>;
+
+export function setUnauthorizedHandler(
+  handler: (() => void) | null,
+): void;

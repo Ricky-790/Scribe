@@ -4,6 +4,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agents_service.models import ResearchPlan, TaskStatus
+
 from backend.db.models import Task
 
 
@@ -22,6 +23,10 @@ class TaskService:
         Every task is created with status=PENDING. Existing tasks for the same
         report_id are not touched; callers should ensure this is only called once
         per report.
+
+        Replan tasks are inserted the same way — their ids are round-prefixed
+        (r2_task_1) so they cannot collide with the first round on the composite
+        primary key.
         """
         try:
             rows = [
@@ -30,12 +35,42 @@ class TaskService:
                     report_id=report_id,
                     task_name=task.name,
                     objective=task.objective,
-                    depends_on=task.depends_on,
                     status=TaskStatus.PENDING.value,
                 )
                 for task in plan.tasks
             ]
             session.add_all(rows)
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+
+    async def create_tasks_from_replan(
+        self, session: AsyncSession, report_id: UUID, tasks: list[dict]
+    ) -> None:
+        """
+        Insert the tasks produced by a replan round.
+
+        Takes serialized task dicts because they arrive on the stream event that
+        announces the replan. Separate from create_tasks_from_plan because that
+        one is called once per report, while this is called once per correction
+        round.
+        """
+        if not tasks:
+            return
+        try:
+            session.add_all(
+                [
+                    Task(
+                        id=task["id"],
+                        report_id=report_id,
+                        task_name=task["name"],
+                        objective=task["objective"],
+                        status=TaskStatus.PENDING.value,
+                    )
+                    for task in tasks
+                ]
+            )
             await session.commit()
         except Exception:
             await session.rollback()

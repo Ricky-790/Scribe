@@ -1,15 +1,20 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
+
+MIN_PASSWORD_LENGTH = 8
+MAX_PASSWORD_LENGTH = 256
 
 
 class SignupRequest(BaseModel):
-    username: str
+    username: str = Field(min_length=1, max_length=64)
     email: EmailStr
-    password: str
+    # Enforced server-side so the rule cannot be bypassed by calling the API
+    # directly; the signup form mirrors the same minimum.
+    password: str = Field(min_length=MIN_PASSWORD_LENGTH, max_length=MAX_PASSWORD_LENGTH)
 
 
 class SigninRequest(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(min_length=1, max_length=MAX_PASSWORD_LENGTH)
 
 
 class AuthResponse(BaseModel):

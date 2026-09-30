@@ -42,9 +42,14 @@ class Task(BaseModel):
             "Written so a sub-agent with no other context could execute it correctly."
         ),
     )
-    depends_on: list[str] = Field(
-        default_factory=list,
-        description="List of task ids that must complete before this task can start. Empty if none.",
+    evidence_requirements: str = Field(
+        default="",
+        description=(
+            "What specific evidence this task must produce for its claim to count as "
+            "supported — e.g. 'a lifecycle gCO2e/kWh figure from at least two "
+            "independent analyses'. Consumed by the challenge stage to judge whether "
+            "the resulting claim is adequately supported."
+        ),
     )
     diagram: bool = Field(
         default=False, description="Does this task need a representing diagram for it?"
@@ -52,15 +57,16 @@ class Task(BaseModel):
     diagram_plan: Optional[DiagramPlan] = Field(
         default=None, description="Explain the diagram requirements in this"
     )
-    status: TaskStatus = Field(default=TaskStatus.PENDING)
-    output: Optional[str] = Field(default=None)
 
     @field_validator("id")
     @classmethod
     def validate_id_format(cls, v: str) -> str:
-        if not re.fullmatch(r"task_\d+", v):
+        # Round 2+ tasks are prefixed so they cannot collide with round 1 on the
+        # (id, report_id) primary key.
+        if not re.fullmatch(r"r\d+_task_\d+|task_\d+", v):
             raise ValueError(
-                f"Task id '{v}' does not match required format 'task_N' (e.g. 'task_1')"
+                f"Task id '{v}' does not match required format 'task_N' or "
+                f"'rN_task_N' (e.g. 'task_1', 'r2_task_1')"
             )
         return v
 
@@ -83,19 +89,11 @@ class ResearchPlan(BaseModel):
     )
     tasks: list[Task] = Field(
         ...,
-        description="The full list of tasks forming the DAG for this research goal.",
+        description=(
+            "The full list of research tasks for this goal. All tasks run in "
+            "parallel, so they must be independently executable."
+        ),
     )
-
-    @model_validator(mode="after")
-    def validate_dependencies_exist(self) -> "ResearchPlan":
-        task_ids = {t.id for t in self.tasks}
-        for task in self.tasks:
-            missing = set(task.depends_on) - task_ids
-            if missing:
-                raise ValueError(
-                    f"Task '{task.id}' depends on unknown task id(s): {missing}"
-                )
-        return self
 
     @model_validator(mode="after")
     def validate_no_duplicate_ids(self) -> "ResearchPlan":

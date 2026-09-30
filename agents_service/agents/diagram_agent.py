@@ -2,11 +2,11 @@ import os
 
 from dotenv import load_dotenv
 from pydantic_ai import Agent
-from pydantic_ai.models.openai import OpenAIChatModel
-from pydantic_ai.providers.openai import OpenAIProvider
 
 from agents_service.models.diagram_models import DiagramAgentOutput
 from agents_service.models.sub_agent_models import DiagramData
+from agents_service.pipeline.orchestrator import build_model
+from agents_service.pipeline.rate_limiting import Provider
 from agents_service.prompts import (
     DIAGRAM_AGENT_PROMPT,
     DIAGRAM_AGENT_SYSTEM_INSTRUCTIONS,
@@ -15,20 +15,18 @@ from agents_service.prompts.diagram_prompts import build_data_block
 
 load_dotenv()
 
+_default_model: str = os.getenv("CODE_GENERATION_MODEL", "minimaxai/minimax-m3")
 
-def get_diagram_agent() -> Agent:
-    model_name = os.getenv("CODE_GENERATION_MODEL", "minimaxai/minimax-m3")
-    code_gen_model = OpenAIChatModel(
-        model_name,
-        provider=OpenAIProvider(
-            base_url=os.getenv(
-                "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"
-            ),
-            api_key=os.getenv("NVIDIA_API_KEY", ""),
-        ),
+
+def get_diagram_agent(
+    model_name: str | None = None, provider: Provider | None = None
+) -> Agent:
+    """Build the agent. Overrides let the orchestrator supply a fallback model."""
+    model = build_model(
+        model_name or _default_model, provider or Provider.OPENROUTER
     )
     code_gen_agent = Agent(
-        code_gen_model,
+        model,
         output_type=DiagramAgentOutput,
         instructions=DIAGRAM_AGENT_SYSTEM_INSTRUCTIONS,
     )
@@ -42,20 +40,3 @@ async def generate_diagram_code(
     if not diagram_agent:
         diagram_agent = get_diagram_agent()
     return await diagram_agent.run(prompt)
-
-
-# model_name = os.getenv("CODE_GENERATION_MODEL", "minimaxai/minimax-m3")
-# code_gen_model = OpenAIChatModel(
-#     model_name,
-#     provider=OpenAIProvider(
-#         base_url=os.getenv(
-#             "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"
-#         ),
-#         api_key=os.getenv("NVIDIA_API_KEY", ""),
-#     ),
-# )
-# code_gen_agent = Agent(
-#     code_gen_model,
-# )
-# result = code_gen_agent.run_sync("Hello")
-# print(result.output)

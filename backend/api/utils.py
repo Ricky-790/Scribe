@@ -1,3 +1,4 @@
+import inspect
 import os
 import re
 
@@ -36,9 +37,11 @@ def db_messages_to_model_messages(messages: list[Messages]) -> list[ModelMessage
 async def attach_signed_url(markdown_content: str, expires_in: int = 900) -> str:
     """Replace supabase:: placeholders with fresh signed URLs before serving."""
     pattern = r"\(supabase::([^)]+)\)"
-    matches = re.findall(pattern, markdown_content)
+    # A diagram can be referenced more than once in a report, so resolve each
+    # distinct object path once instead of once per occurrence.
+    paths = set(re.findall(pattern, markdown_content))
 
-    if not matches:
+    if not paths:
         return markdown_content
     url: str = os.getenv("SUPABASE_URL", "")
     key: str = os.getenv("SUPABASE_KEY", "")
@@ -47,13 +50,29 @@ async def attach_signed_url(markdown_content: str, expires_in: int = 900) -> str
 
     supabase: AsyncClient = await acreate_client(url, key)
 
-    for path in matches:
-        print(path)
-        signed = await supabase.storage.from_(bucket_id).create_signed_url(
-            path=path.split(bucket_id)[1], expires_in=expires_in
-        )
-        markdown_content = markdown_content.replace(
-            f"(supabase::{path})", f"({signed['signedURL']})"
-        )
+    try:
+        signed_urls: dict[str, str] = {}
+        for path in paths:
+            # upload_to_bucket stores "<bucket>/Diagrams/..."; strip the bucket
+            # to get the object key create_signed_url expects. Tolerate a
+            # placeholder that never had the bucket prefix rather than raising.
+            object_path = path.removeprefix(bucket_id).lstrip("/")
+            signed = await supabase.storage.from_(bucket_id).create_signed_url(
+                path=object_path, expires_in=expires_in
+            )
+            signed_urls[f"(supabase::{path})"] = f"({signed['signedURL']})"
+
+        for placeholder, signed_url in signed_urls.items():
+            markdown_content = markdown_content.replace(placeholder, signed_url)
+    finally:
+        # AsyncClient exposes the httpx transports directly; close whichever
+        # were actually created (acreate_client builds storage + postgrest).
+        for attr in ("storage", "postgrest"):
+            client = getattr(supabase, attr, None)
+            closer = getattr(client, "aclose", None) or getattr(client, "close", None)
+            if closer is not None:
+                result = closer()
+                if inspect.isawaitable(result):
+                    await result
 
     return markdown_content

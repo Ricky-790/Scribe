@@ -1,8 +1,10 @@
 import json
+from collections import OrderedDict
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.sse import EventSourceResponse
+from pydantic_ai.messages import ModelMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agents_service.agents import classify_query
@@ -27,6 +29,58 @@ logger = get_logger()
 router = APIRouter()
 
 
+class MessageHistoryCache:
+    """In-process LRU cache of converted model message history per conversation.
+
+    Entries are keyed by ``(user_id, conversation_id)`` so a conversation's
+    history can never be served to a different user. Values are always copied
+    on read/write, so callers cannot mutate (or leak) a cached list.
+    """
+
+    def __init__(self, max_size: int = 256) -> None:
+        self._store: OrderedDict[tuple[UUID, UUID], list[ModelMessage]] = OrderedDict()
+        self._max_size = max_size
+
+    @staticmethod
+    def _key(user_id: UUID, conversation_id: UUID) -> tuple[UUID, UUID]:
+        return (user_id, conversation_id)
+
+    def get(self, user_id: UUID, conversation_id: UUID) -> list[ModelMessage] | None:
+        key = self._key(user_id, conversation_id)
+        history = self._store.get(key)
+        if history is None:
+            return None
+        self._store.move_to_end(key)
+        return list(history)
+
+    def set(
+        self, user_id: UUID, conversation_id: UUID, history: list[ModelMessage]
+    ) -> None:
+        key = self._key(user_id, conversation_id)
+        self._store[key] = list(history)
+        self._store.move_to_end(key)
+        while len(self._store) > self._max_size:
+            self._store.popitem(last=False)
+
+    def append(
+        self,
+        user_id: UUID,
+        conversation_id: UUID,
+        *messages: ModelMessage,
+    ) -> None:
+        """Append newly created messages to a cached conversation history."""
+        key = self._key(user_id, conversation_id)
+        history = self._store.setdefault(key, [])
+        history.extend(messages)
+        self._store.move_to_end(key)
+
+    def invalidate(self, user_id: UUID, conversation_id: UUID) -> None:
+        self._store.pop(self._key(user_id, conversation_id), None)
+
+
+message_history_cache = MessageHistoryCache()
+
+
 @router.post("/chat", response_class=EventSourceResponse)
 async def send_message(
     payload: ChatRequest,
@@ -47,15 +101,26 @@ async def send_message(
             raise HTTPException(
                 detail="Conversation not found", status_code=status.HTTP_404_NOT_FOUND
             )
-        conversation_history = await message_service.get_conversation_messages(
-            session=session, conversation_id=conversation_id, user_id=user.user_id
-        )
-        model_message_history = db_messages_to_model_messages(conversation_history)
+        # Cache is keyed (user_id, conversation_id), so histories can never
+        # be served across users; only fall back to the DB on a cache miss.
+        model_message_history = message_history_cache.get(user.user_id, conversation_id)
+        if model_message_history is None:
+            conversation_history = await message_service.get_conversation_messages(
+                session=session, conversation_id=conversation_id, user_id=user.user_id
+            )
+            model_message_history = db_messages_to_model_messages(conversation_history)
+            message_history_cache.set(
+                user.user_id, conversation_id, model_message_history
+            )
     user_message = await message_service.add_message(
         session=session,
         conversation_id=conversation_id,
         role="User",
         message_content=payload.message,
+    )
+    # Keep the cache in sync so the next turn does not need to hit the DB.
+    message_history_cache.append(
+        user.user_id, conversation_id, *db_messages_to_model_messages([user_message])
     )
     # Tell frontend user_message is sent -> Show user chat bubble
     if payload.conversation_id is None:
@@ -98,6 +163,11 @@ async def send_message(
         role="Agent",
         message_content=final_output.response,
     )
+    message_history_cache.append(
+        user.user_id,
+        conversation_id,
+        *db_messages_to_model_messages([assistant_message]),
+    )
     yield {
         "event": "message_complete",
         "data": ChatMessage(
@@ -110,7 +180,13 @@ async def send_message(
     }
     if final_output.intent == IntentEnum.RESEARCH_TOPIC:
         report = await reports_service.create_report(
-            session, user.user_id, payload.message, assistant_message.id
+            session,
+            user.user_id,
+            payload.message,
+            assistant_message.id,
+            intent=final_output.intent.value,
+            categories=[c.value for c in final_output.categories],
+            response=final_output.response,
         )
         run_research_pipeline_task.delay(str(report.id))
         yield {
@@ -152,7 +228,19 @@ async def get_conversation_messages(
 async def get_all_chats(
     session: AsyncSession = Depends(get_session),
     user: AuthenticatedUser = Depends(get_current_user),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
 ):
-    chats = await message_service.get_all_conversations(session=session, user_id=user.user_id)
-    # print(chats)
-    return [ChatItem(conversation_id = str(c.id), title=c.title, updated_at=c.updated_at) for c in chats]
+    """
+    Return the caller's recent conversations, newest first.
+
+    The limit is passed through explicitly — relying on the service default
+    silently truncated the sidebar to five chats.
+    """
+    chats = await message_service.get_all_conversations(
+        session=session, user_id=user.user_id, limit=limit, offset=offset
+    )
+    return [
+        ChatItem(conversation_id=str(c.id), title=c.title, updated_at=c.updated_at)
+        for c in chats
+    ]

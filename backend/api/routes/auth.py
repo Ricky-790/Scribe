@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api.auth.schemas import AuthResponse, SigninRequest, SignupRequest
@@ -7,6 +8,11 @@ from backend.db.services.user_service import users_service
 from backend.db.session import get_session
 
 router = APIRouter()
+
+# Verified against when the email is unknown, so a signin attempt costs the
+# same Argon2 work either way and response timing cannot be used to enumerate
+# which addresses are registered.
+_DUMMY_HASH = hash_password("not-a-real-password-placeholder")
 
 
 @router.post(
@@ -27,12 +33,20 @@ async def signup(
             detail="An account with this email already exists.",
         )
 
-    user = await users_service.create_user(
-        session,
-        username=payload.username,
-        email=payload.email,
-        password_hash=hash_password(payload.password),
-    )
+    try:
+        user = await users_service.create_user(
+            session,
+            username=payload.username,
+            email=payload.email,
+            password_hash=hash_password(payload.password),
+        )
+    except IntegrityError:
+        # A concurrent signup won the race past the check above; the unique
+        # index is the real arbiter, so surface it as the same 409.
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email already exists.",
+        )
 
     token = encode_jwt(user.id, user.email)
     return AuthResponse(access_token=token)
@@ -50,7 +64,10 @@ async def signin(
     """
     user = await users_service.get_user_by_email(session, payload.email)
 
-    if user is None or not verify_password(payload.password, user.password_hash):
+    password_hash = user.password_hash if user else _DUMMY_HASH
+    password_ok = verify_password(payload.password, password_hash)
+
+    if user is None or not password_ok:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password.",

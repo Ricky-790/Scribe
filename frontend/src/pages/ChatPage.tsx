@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { AppShell } from "../components/AppShell";
 import { API_BASE_URL } from "../config";
+import { readEventStream } from "../lib/sse";
 
 interface ChatMessage {
   id: string;
@@ -12,14 +13,6 @@ interface ChatMessage {
   createdAt: Date;
   streaming?: boolean;
   reportId?: string;
-}
-interface ResearchEvent {
-  reportId: string;
-  title: string;
-}
-interface SseEnvelope {
-  event: string;
-  data: string;
 }
 
 const QUICK_SUGGESTIONS = [
@@ -158,68 +151,11 @@ export const ChatPage: React.FC = () => {
           throw new Error(detail);
         }
 
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-
-          // SSE messages are delimited by blank lines. Split out complete ones.
-          let idx;
-          while ((idx = buffer.indexOf("\n\n")) !== -1) {
-            const rawEvent = buffer.slice(0, idx);
-            buffer = buffer.slice(idx + 2);
-
-            // The backend uses FastAPI's EventSourceResponse which serializes
-            // the event envelope into a single `data:` line. Collect any
-            // `data:` lines (multi-line data is joined with newlines per spec).
-            let dataStr = "";
-            for (const line of rawEvent.split("\n")) {
-              if (line.startsWith("data:")) {
-                dataStr += (dataStr ? "\n" : "") + line.slice(5).trim();
-              }
-            }
-            if (!dataStr) continue;
-
-            // Try the wrapped-envelope format first:
-            //   {"event": "<name>", "data": "<json-string>"}
-            let envelope: SseEnvelope | null = null;
-            let outer: any = null;
-            try {
-              outer = JSON.parse(dataStr);
-            } catch {
-              outer = null;
-            }
-            if (outer && typeof outer === "object" && outer.event) {
-              envelope = outer as SseEnvelope;
-            }
-
-            const eventName = envelope?.event ?? "";
-            let payload: any = null;
-            if (envelope) {
-              // Inner `data` is usually a JSON object (e.g. {"message_id":
-              // "..."}) but may also be a JSON-encoded string in older event
-              // types. Try object first, then string, otherwise leave null.
-              const inner = envelope.data;
-              if (inner && typeof inner === "object") {
-                payload = inner;
-              } else if (typeof inner === "string") {
-                try {
-                  payload = JSON.parse(inner);
-                } catch {
-                  payload = inner;
-                }
-              } else {
-                payload = inner;
-              }
-            } else {
-              payload = outer;
-            }
-
+        // Event payloads are loosely shaped per event name; the narrow
+        // `unknown` from the reader is asserted here at the one place the
+        // shape actually matters.
+        await readEventStream(res, ({ event: eventName, data: raw }: { event: string; data: any }) => {
+          const payload = raw;
             if (eventName === "conversation_created") {
               const newId = payload?.conversation_id;
               if (newId) {
@@ -269,13 +205,12 @@ export const ChatPage: React.FC = () => {
                 ];
               });
             } else if (eventName === "message_delta") {
-              // For deltas, payload may be a plain string (the agent's reply)
-              // or an object with a `delta` field.
-              const piece =
-                typeof payload === "string"
-                  ? payload
-                  : (payload?.delta ?? payload?.response ?? "");
-              if (!piece) continue;
+              // A delta is the agent's reply text. It arrives as a plain
+              // string, so it must not be run through JSON.parse first — a
+              // chunk that happens to be valid JSON ("42", "true") would
+              // become a non-string and the text would be dropped.
+              const piece = typeof payload === "string" ? payload : "";
+              if (!piece) return;
               setMessages((prev) => {
                 const next = [...prev];
                 const last = next[next.length - 1];
@@ -330,7 +265,7 @@ export const ChatPage: React.FC = () => {
                 }
                 return next;
               });
-            } else if (eventName === "Starting a research") {
+            } else if (eventName === "Starting research") {
               const reportData = payload as { report_id: string; title: string };
               setMessages((prev) => [
                 ...prev,
@@ -344,8 +279,7 @@ export const ChatPage: React.FC = () => {
                 },
               ]);
             }
-          }
-        }
+        });
       } catch (err) {
         if ((err as Error).name === "AbortError") {
           // User cancelled — quietly drop the optimistic bubble if nothing

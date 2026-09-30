@@ -10,6 +10,7 @@ import { SignupPage } from "./pages/SignupPage";
 import { LoginPage } from "./pages/LoginPage";
 import { ChatPage } from "./pages/ChatPage";
 import { ReportPage } from "./pages/ReportPage";
+import { ReportStreamPage } from "./pages/ReportStreamPage";
 import { ReportsListPage } from "./pages/ReportsListPage";
 
 // Catch-all that respects auth state: signed-in users land on /chat so the
@@ -77,6 +78,16 @@ export const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <ReportPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Live progress for a run that is still going. ReportPage redirects
+              here when a report is not yet finished. */}
+          <Route
+            path="/report/:reportId/stream"
+            element={
+              <ProtectedRoute>
+                <ReportStreamPage />
               </ProtectedRoute>
             }
           />

@@ -24,6 +24,8 @@ const statusMeta = (status: string | null) => {
   if (s === "failed") return { label: "Failed", chip: "bg-error-container text-on-error-container" };
   if (s === "synthesizing" || s === "synthesis")
     return { label: "Writing", chip: "bg-accent-container text-on-accent-container" };
+  if (s === "verifying" || s === "verify")
+    return { label: "Verifying", chip: "bg-accent-container text-on-accent-container" };
   if (s === "researching" || s === "research")
     return { label: "Researching", chip: "bg-accent-container text-on-accent-container" };
   if (s === "planning")

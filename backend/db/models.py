@@ -26,6 +26,7 @@ class RunStatus:
     CLASSIFYING = "classifying"
     PLANNING = "planning"
     RESEARCHING = "researching"
+    VERIFYING = "verifying"
     SYNTHESIZING = "synthesizing"
     DONE = "done"
     FAILED = "failed"
@@ -36,6 +37,7 @@ RUN_STATUS_VALUES = [
     RunStatus.CLASSIFYING,
     RunStatus.PLANNING,
     RunStatus.RESEARCHING,
+    RunStatus.VERIFYING,
     RunStatus.SYNTHESIZING,
     RunStatus.DONE,
     RunStatus.FAILED,

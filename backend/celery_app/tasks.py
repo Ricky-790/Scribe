@@ -52,13 +52,16 @@ async def run_pipeline(report_id: str) -> None:
             )
 
         async def update_db(data):
-            """Handles 'stage' events from graph nodes."""
+            """Applies DB side effects for events from the graph nodes.
+
+            Purely a persistence concern — publishing is the stream loop's job,
+            so it must never emit anything itself.
+            """
             phase = data.get("phase")
             status = data.get("status")
             if phase is None or status is None:
                 raise ValueError("Invalid event data: missing phase or status")
 
-            await publish(data)
             async with session_factory() as session:
                 if phase == "planning" and status == "starting":
                     await reports_service.update_status(
@@ -81,22 +84,46 @@ async def run_pipeline(report_id: str) -> None:
                     else:
                         raise ValueError("Strategy or Plan is missing")
 
-                elif phase == "researching" and status == "finished":
+                elif phase == "verifying" and status == "running":
+                    # Build Claims is the first thing that runs once research
+                    # settles, so it owns the transition into verification.
+                    # Repeats are harmless; a replan round re-enters research
+                    # and this fires again.
+                    await reports_service.update_status(
+                        session, report_id_uuid, "verifying"
+                    )
+
+                    replan_tasks = data.get("replan_tasks") or []
+                    if replan_tasks:
+                        # A correction round added tasks; persist them so the
+                        # run's task list shows what the review stage asked for.
+                        await tasks_service.create_tasks_from_replan(
+                            session, report_id_uuid, replan_tasks
+                        )
+
+                elif phase == "verifying" and status == "finished":
+                    # The claim graph survived review, so the report is being
+                    # written.
                     await reports_service.update_status(
                         session, report_id_uuid, "synthesizing"
                     )
 
                 elif phase == "synthesis" and status == "finished":
+                    # Every section writer emits synthesis/finished, so only the
+                    # terminal event (done=True, from compile_report_node) may
+                    # mark the run complete — otherwise the report is announced
+                    # as finished while its content is still being assembled.
+                    if not data.get("done"):
+                        return
                     await reports_service.update_status(session, report_id_uuid, "done")
 
         async def update_task_state(data: dict):
-            """Handles 'task' events from research subgraph nodes."""
+            """Applies per-task DB side effects for events from the research subgraph."""
             phase = data.get("phase")
             status = data.get("status")
             if phase is None or status is None:
                 raise ValueError("Invalid event data: missing phase or status")
             if phase == "researching" and status == "running":
-                # logger.info(f"INSIDE UPDATE TASK: {data}")
                 task_id = data.get("task_id")
                 task_status = data.get("task_status")
                 result = data.get("task_result", None)
@@ -115,22 +142,23 @@ async def run_pipeline(report_id: str) -> None:
                             session, report_id_uuid, task_id, task_status
                         )
 
-                # await publish(data)
-
         graph = get_research_graph()
 
         initial_state = {
             "report_id": report_id,
             "query": query,
             "categories": categories or [],
-            "classification": None,
             "plan": None,
+            "replan_tasks": [],
+            "replan_count": 0,
             "task_results": {},
+            "claim_graph": None,
+            "challenge_result": None,
+            "replan_plan": None,
             "report_outline": None,
             "written_sections": {},
             "final_report": None,
             "error": None,
-            "stream_events": [],
         }
 
         final_state = None
@@ -158,12 +186,28 @@ async def run_pipeline(report_id: str) -> None:
                     await reports_service.save_report_content(
                         session, report_id_uuid, report.title, report.content
                     )
+                # Emitted only after the body is persisted, so a client that
+                # reacts to it can never read back a half-written report. The
+                # status was already flipped to done by the terminal graph event.
+                await publish(
+                    {
+                        "phase": "synthesis",
+                        "status": "finished",
+                        "done": True,
+                        "msg": "Report ready.",
+                    }
+                )
 
-            await publish({"phase": "Full", "status": "finished"})
-
-        except Exception:
+        except Exception as exc:
             logger.exception(f"Pipeline failed for report_id={report_id}")
             async with session_factory() as session:
                 await reports_service.update_status(session, report_id_uuid, "failed")
-            await publish({"phase": "Unknown", "status": "failed"})
+            await publish(
+                {
+                    "phase": "failed",
+                    "status": "failed",
+                    "done": True,
+                    "msg": str(exc) or "Research pipeline failed.",
+                }
+            )
             raise

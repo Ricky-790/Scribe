@@ -1,7 +1,6 @@
 from typing import Literal, Optional
 from uuid import UUID
 from datetime import datetime
-from fastapi import WebSocket
 from pydantic import BaseModel
 
 from agents_service.models import IntentEnum, TaskStatus
@@ -87,22 +86,3 @@ class PublishMessage(BaseModel):
     task_status: Optional[str] = None
     msg: Optional[str] = None
     # task_result: Optional[dict] = None
-
-
-class ConnectionManager:
-    """Wrapper class to handle Ws connections"""
-
-    def __init__(self):
-        self.connections: dict[UUID, WebSocket] = {}
-
-    async def connect(self, report_id: UUID, websocket: WebSocket):
-        await websocket.accept()
-        self.connections[report_id] = websocket
-
-    def disconnect(self, report_id: UUID):
-        self.connections.pop(report_id, None)
-
-    async def send(self, report_id, message: PublishMessage):
-        websocket = self.connections.get(report_id)
-        if websocket:
-            await websocket.send_json(message.model_dump(mode="json"))

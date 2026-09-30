@@ -13,15 +13,31 @@ class UserReportService:
     # --- writes ---
 
     async def create_report(
-        self, session: AsyncSession, user_id: UUID, goal: str, message_id: UUID
+        self,
+        session: AsyncSession,
+        user_id: UUID,
+        goal: str,
+        message_id: UUID,
+        intent: str | None = None,
+        categories: list[str] | None = None,
+        response: str | None = None,
     ) -> UserReport:
-        """Create a new UserReport with PENDING status and return it."""
+        """
+        Create a new UserReport with PENDING status and return it.
+
+        The classifier output is written in the same commit: the worker reads
+        `categories` back to pick a research strategy, so a row created without
+        them would silently plan against an empty category list.
+        """
         try:
             report = UserReport(
                 user_id=user_id,
                 goal=goal,
                 status=RunStatus.PENDING,
                 message_id=message_id,
+                intent=intent,
+                categories=categories,
+                response=response,
             )
             session.add(report)
             await session.commit()

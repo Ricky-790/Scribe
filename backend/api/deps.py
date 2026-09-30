@@ -1,12 +1,12 @@
 from uuid import UUID
 
 import jwt
-from fastapi import Depends, HTTPException, WebSocket, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from backend.api.auth.security import decode_jwt
 
-_bearer = HTTPBearer()
+_bearer = HTTPBearer(auto_error=False)
 
 
 class AuthenticatedUser:
@@ -17,16 +17,11 @@ class AuthenticatedUser:
         self.email = email
 
 
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(_bearer),
-) -> AuthenticatedUser:
-    """
-    FastAPI dependency that validates the Bearer JWT and returns the
-    parsed token payload as an AuthenticatedUser.
+def _authenticated_user_from_token(token: str) -> AuthenticatedUser:
+    """Validate a Bearer token and return its payload.
 
-    Raises HTTP 401 for missing, malformed, or expired tokens.
+    Raises HTTP 401 for expired, invalid, or malformed tokens.
     """
-    token = credentials.credentials
     try:
         payload = decode_jwt(token)
     except jwt.ExpiredSignatureError:
@@ -55,17 +50,24 @@ async def get_current_user(
         )
 
 
-async def get_current_user_ws(ws: WebSocket):
-    token = ws.query_params.get("token")
-    if token is None:
-        raise HTTPException(status_code=401)
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
+) -> AuthenticatedUser:
+    """
+    FastAPI dependency that validates the Bearer JWT and returns the
+    parsed token payload as an AuthenticatedUser.
 
-    payload = decode_jwt(token)
-    return AuthenticatedUser(
-        user_id=UUID(payload["id"]),
-        email=payload["email"],
-    )
+    Raises HTTP 401 for missing, malformed, or expired tokens.
+    """
+    if credentials is None or not credentials.credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return _authenticated_user_from_token(credentials.credentials)
 
 
-async def get_redis_client(websocket: WebSocket):
-    return websocket.app.state.redis_client
+async def get_redis_client(request: Request):
+    """Return the shared Redis client held on app state by the lifespan hook."""
+    return request.app.state.redis_client

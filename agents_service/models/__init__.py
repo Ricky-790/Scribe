@@ -1,9 +1,18 @@
 from .classifier_models import CategoryEnum, IntentClassification, IntentEnum
-from .decomposer_models import ResearchPlan, Task, TaskStatus
+from .claim_models import (
+    ChallengeIssue,
+    ChallengeResult,
+    Claim,
+    ClaimGraph,
+    ClaimStatus,
+    Evidence,
+    ReplanPlan,
+    ReplanTask,
+)
+from .decomposer_models import DiagramTypes, ResearchPlan, Task, TaskStatus
 from .diagram_models import DiagramAgentOutput
 from .sub_agent_models import (
     DiagramData,
-    DiagramTypes,
     Source,
     TaskResult,
     TaskResultStatus,
@@ -14,16 +23,24 @@ __all__ = [
     "Task",
     "TaskStatus",
     "ResearchPlan",
+    "DiagramTypes",
     "CategoryEnum",
     "IntentClassification",
     "IntentEnum",
     "TaskResult",
     "Source",
     "TaskResultStatus",
+    "Evidence",
+    "Claim",
+    "ClaimStatus",
+    "ClaimGraph",
+    "ChallengeIssue",
+    "ChallengeResult",
+    "ReplanTask",
+    "ReplanPlan",
     "ReportOutline",
     "ReportSection",
     "Report",
     "DiagramData",
-    "DiagramTypes",
     "DiagramAgentOutput",
 ]

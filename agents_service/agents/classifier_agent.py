@@ -2,7 +2,7 @@ import os
 from collections.abc import AsyncIterable
 
 from dotenv import load_dotenv
-from pydantic_ai import Agent, ModelMessagesTypeAdapter
+from pydantic_ai import Agent
 from pydantic_ai.messages import ModelMessage
 from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.providers.google import GoogleProvider
@@ -15,7 +15,7 @@ from agents_service.prompts import (
 
 load_dotenv()
 
-model_name: str = os.getenv("INTENT_CLASSIFIER_MODEL", "google/gemma-4-26b-a4b-it:free")
+model_name: str = os.getenv("INTENT_CLASSIFIER_MODEL", "gemini-3.1-flash-lite")
 
 
 def get_classifier_agent() -> Agent:

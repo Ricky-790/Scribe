@@ -13,9 +13,33 @@ class TaskResultStatus(str, Enum):
 
 
 class Source(BaseModel):
+    """
+    A single consulted source.
+
+    ``quoted_passage`` is a verbatim excerpt backing the claim this source is
+    attached to. It is deliberately optional and never validated: a subagent
+    that cannot find a clean quote should omit it rather than invent text, and
+    a claim with no quote still counts as supported.
+    """
+
     url: str = Field(..., description="The URL of the source used.")
     title: Optional[str] = Field(
         default=None, description="The title of the source page, if available."
+    )
+    quoted_passage: Optional[str] = Field(
+        default=None,
+        description=(
+            "A short verbatim excerpt from this source that directly supports the "
+            "claim. Omit if no clean supporting passage was found — never paraphrase "
+            "or reconstruct a quote."
+        ),
+    )
+    source_type: Optional[str] = Field(
+        default=None,
+        description=(
+            "What kind of source this is, e.g. 'peer_reviewed', 'government', "
+            "'industry', 'news', 'encyclopedia', 'blog'."
+        ),
     )
 
 
@@ -52,22 +76,16 @@ class DiagramData(BaseModel):
         return self
 
 
-class KeyFinding(BaseModel):
-    point: str = Field(
-        ...,
-        description="One distinct, self-contained finding relevant to the task's objective. Should be specific and factual, not vague.",
-    )
-    supporting_detail: Optional[str] = Field(
-        default=None,
-        description="Additional context, numbers, or explanation backing this finding, if needed.",
-    )
-    source_urls: list[str] = Field(
-        default_factory=list,
-        description="URLs (from the sources list) that support this specific finding",
-    )
-
-
 class TaskResult(BaseModel):
+    """
+    What one research subagent found for its assigned question.
+
+    A task produces exactly one headline ``claim``; ``supporting_points`` carries
+    the detail behind it. Consolidation — merging duplicates, splitting compound
+    claims, spotting conflicts — is deliberately NOT done here. It is the job of
+    the build_claims stage, which can see every result at once.
+    """
+
     task_id: str = Field(
         ..., description="The id of the Task this result corresponds to."
     )
@@ -75,21 +93,24 @@ class TaskResult(BaseModel):
         ...,
         description="'success' if the task was completed, 'partial' if some information could not be found, 'failed' if the task could not be meaningfully completed.",
     )
-    summary: str = Field(
+    claim: str = Field(
         ...,
-        description="A short (2-4 sentence) narrative summary of what was found, giving a reader the gist without needing the full findings list.",
+        description=(
+            "The single most important finding for this task, as one self-contained "
+            "assertive sentence. If the task genuinely uncovered two distinct facts, "
+            "join them here — build_claims will split the claim apart again."
+        ),
     )
-    key_findings: list[KeyFinding] = Field(
-        default=[],
-        description="The distinct, structured findings gathered for this task's objective. This is the primary content the synthesizer will draw on.",
+    supporting_points: list[str] = Field(
+        default_factory=list,
+        description=(
+            "The specific evidence, numbers, and context behind the claim — one "
+            "self-contained item each. Omit if the claim is self-explanatory."
+        ),
     )
     sources: list[Source] = Field(
         default_factory=list,
         description="All sources consulted while completing this task.",
-    )
-    notes: Optional[str] = Field(
-        default=None,
-        description="Optional notes on limitations, contradictions between sources, or gaps in available information — useful context for the synthesizer, not for the reader.",
     )
     diagram_data: Optional[DiagramData] = Field(
         default=None,
