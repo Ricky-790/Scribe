@@ -11,6 +11,7 @@ from backend.celery_app import celery_app, pipeline_resources
 from backend.db.models import RunStatus
 from backend.db.services.task_service import tasks_service
 from backend.db.services.user_report_service import reports_service
+from agents_service.pipeline.rate_limiting import release_resources
 from custom_logger import get_logger
 
 logger = get_logger()
@@ -211,3 +212,8 @@ async def run_pipeline(report_id: str) -> None:
                 }
             )
             raise
+        finally:
+            # This task's event loop is about to be torn down by asyncio.run(),
+            # and the shared rate limiter holds a Redis pool bound to it. Close
+            # it explicitly rather than waiting for the loop's GC.
+            await release_resources()

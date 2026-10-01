@@ -32,6 +32,7 @@ from agents_service.agents.classifier_agent import (  # noqa: E402
     get_classifier_agent,
 )
 from agents_service.graph.graph import MAX_REPLAN_ROUNDS, get_research_graph  # noqa: E402
+from agents_service.pipeline.rate_limiting import release_resources  # noqa: E402
 from agents_service.models import IntentEnum  # noqa: E402
 
 # ── Console ──────────────────────────────────────────────────────
@@ -330,7 +331,12 @@ async def run(topic: str, args: argparse.Namespace) -> int:
     info("plan → research → build claims → challenge → [replan] → synthesis")
     print()
 
-    final_state = await run_pipeline(topic, categories, report_id)
+    try:
+        final_state = await run_pipeline(topic, categories, report_id)
+    finally:
+        # Close the rate limiter's Redis pool, which is bound to this loop.
+        await release_resources()
+
     if final_state is None:
         return 1
 

@@ -25,15 +25,25 @@ from dataclasses import dataclass
 from typing import Any, TypeVar
 
 from pydantic_ai import Agent
+from pydantic_ai.exceptions import ModelHTTPError
 from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.models.openrouter import OpenRouterModel
 from pydantic_ai.providers.google import GoogleProvider
 from pydantic_ai.providers.openrouter import OpenRouterProvider
 
-from agents_service.pipeline.rate_limiting import Provider, run_with_retry
+from agents_service.pipeline.rate_limiting import (
+    Provider,
+    RateLimitTimeout,
+    run_with_retry,
+)
 from custom_logger import get_logger
 
 logger = get_logger()
+
+# Only these mean "this provider cannot serve the step right now". Everything
+# else — schema failures, bugs, cancellation — is ours, not the provider's, and
+# would fail identically on the fallback.
+_FALLBACK_TRIGGERS = (ModelHTTPError, RateLimitTimeout)
 
 T = TypeVar("T")
 
@@ -41,7 +51,7 @@ T = TypeVar("T")
 # need to be broadly capable rather than tuned — several of these steps rely on
 # tool calling and validated structured output.
 FALLBACK_OPENROUTER_MODEL = os.getenv(
-    "FALLBACK_OPENROUTER_MODEL", "google/gemini-2.5-flash"
+    "FALLBACK_OPENROUTER_MODEL", "poolside/laguna-s-2.1:free"
 )
 FALLBACK_GOOGLE_MODEL = os.getenv("FALLBACK_GOOGLE_MODEL", "gemini-2.5-flash")
 
@@ -57,6 +67,15 @@ def build_model(model_name: str, provider: Provider):
         model_name,
         provider=GoogleProvider(api_key=os.getenv("GOOGLE_API_KEY", "")),
     )
+
+
+def _describe_failure(error: Exception) -> str:
+    if isinstance(error, RateLimitTimeout):
+        return f"shared budget exhausted: {error}"
+    status = getattr(error, "status_code", None)
+    if status is not None:
+        return f"HTTP {status}: {str(error)[:120]}"
+    return f"{type(error).__name__}: {str(error)[:120]}"
 
 
 @dataclass(frozen=True)
@@ -116,9 +135,15 @@ class AgentOrchestrator:
         """
         Invoke ``fn(agent, *args)`` on the primary provider.
 
-        Falls back to the alternate provider when the primary exhausts its
-        retries. If the fallback also fails, that error propagates with the
-        original attached, so a failure report shows what both providers did.
+        Falls back to the alternate provider when the primary is unusable — it
+        errored, or its shared budget never freed up. If the fallback also fails,
+        that error propagates with the original attached, so a failure report
+        shows what both providers did.
+
+        Only provider-availability problems trigger a fallback. A bug in the
+        step itself (bad output schema, a programming error) propagates
+        immediately, because retrying it on another model would just fail the
+        same way while burning a second provider's budget.
         """
         try:
             agent = self._step.build_agent()
@@ -130,16 +155,16 @@ class AgentOrchestrator:
                 max_retries=self._max_retries,
                 **kwargs,
             )
-        except Exception as primary_error:
+        except _FALLBACK_TRIGGERS as primary_error:
             fallback = self._step.resolve_fallback()
             if fallback is None:
                 raise
 
             provider, build_agent = fallback
             logger.warning(
-                f"[{self._step.name}] {self._step.provider.value} failed after "
+                f"[{self._step.name}] {self._step.provider.value} unusable after "
                 f"{self._max_retries} attempts "
-                f"({type(primary_error).__name__}: {primary_error}); "
+                f"({_describe_failure(primary_error)}); "
                 f"falling back to {provider.value}"
             )
 
@@ -156,7 +181,7 @@ class AgentOrchestrator:
             except Exception as fallback_error:
                 logger.error(
                     f"[{self._step.name}] fallback to {provider.value} also failed: "
-                    f"{type(fallback_error).__name__}: {fallback_error}"
+                    f"{_describe_failure(fallback_error)}"
                 )
                 raise fallback_error from primary_error
 
