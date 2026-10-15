@@ -27,7 +27,7 @@ async def run_pipeline(report_id: str) -> None:
         report_id_uuid = UUID(report_id)
 
         # Load report
-        async with session_factory() as session:
+        async with session_factory()() as session:
             report = await reports_service.get_report_by_id(session, report_id_uuid)
             if report is None:
                 logger.error(f"No report found for report_id={report_id}")
